@@ -72,7 +72,7 @@ public class TicketService {
         }
 
         Ticket ticket = ticketOpt.get();
-        if (!ticket.getCustomer().getUserID().equals(customerID)) {
+        if (!ticket.getCustomer().getUserId().equals(customerID)) {
             throw new RuntimeException("Ticket does not belong to the specified customer");
         }
 
@@ -89,7 +89,7 @@ public class TicketService {
         Ticket ticket = ticketOpt.get();
 
         // Ensure the ticket belongs to the customer
-        if (!ticket.getCustomer().getUserID().equals(customerID)) {
+        if (!ticket.getCustomer().getUserId().equals(customerID)) {
             throw new RuntimeException("Ticket does not belong to the specified customer");
         }
 
@@ -125,7 +125,7 @@ public class TicketService {
         Ticket ticket = ticketOpt.get();
 
         // Ensure the ticket belongs to the customer
-        if (!ticket.getCustomer().getUserID().equals(customerID)) {
+        if (!ticket.getCustomer().getUserId().equals(customerID)) {
             throw new RuntimeException("Ticket does not belong to the specified customer");
         }
 

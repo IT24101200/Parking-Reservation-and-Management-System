@@ -44,7 +44,7 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     List<Ticket> findByCustomerOrderByCreatedAtDesc(@Param("customer") User customer);
 
     // Custom query to find tickets by customer ID with ordering
-    @Query("SELECT t FROM Ticket t WHERE t.customer.userID = :customerID ORDER BY t.createdAt DESC")
+    @Query("SELECT t FROM Ticket t WHERE t.customer.userId = :customerID ORDER BY t.createdAt DESC")
     List<Ticket> findByCustomerUserIDOrderByCreatedAtDesc(@Param("customerID") Long customerID);
 
     // Count tickets by customer

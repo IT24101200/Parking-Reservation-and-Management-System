@@ -40,7 +40,7 @@ public class TicketDTO {
         this.status = ticket.getStatus().toString();
         this.priority = ticket.getPriority().toString();
         this.category = ticket.getCategory();
-        this.customerID = ticket.getCustomer().getUserID();
+        this.customerID = ticket.getCustomer().getUserId();
         this.customerName = ticket.getCustomer().getFirstName() + " " + ticket.getCustomer().getLastName();
         this.customerEmail = ticket.getCustomer().getEmail();
         this.createdAt = ticket.getCreatedAt();

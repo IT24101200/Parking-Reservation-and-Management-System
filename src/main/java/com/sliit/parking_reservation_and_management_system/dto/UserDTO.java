@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Size;
 
 public class UserDTO {
 
-    private Long userID;
+    private Long userId;
 
     @NotBlank(message = "First name is required")
     private String firstName;
@@ -41,12 +41,12 @@ public class UserDTO {
     }
 
     // Getters and Setters
-    public Long getUserID() {
-        return userID;
+    public Long getUserId() {
+        return userId;
     }
 
-    public void setUserID(Long userID) {
-        this.userID = userID;
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public String getFirstName() {

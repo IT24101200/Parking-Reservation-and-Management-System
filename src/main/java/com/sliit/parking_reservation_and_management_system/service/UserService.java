@@ -46,11 +46,39 @@ public class UserService {
         }
 
         // Default status
+        // Default status
         if (user.getStatus() == null || user.getStatus().isBlank()) {
             user.setStatus("ACTIVE");
         }
 
         return userRepository.save(user);
+    }
+
+    public User registerUser(User user) {
+        // Check if email already exists
+        if (userRepository.findByEmail(user.getEmail().trim().toLowerCase()).isPresent()) {
+            throw new IllegalArgumentException("Email is already registered!");
+        }
+
+        // Trim and normalize input data
+        user.setFirstName(user.getFirstName().trim());
+        user.setLastName(user.getLastName().trim());
+        user.setEmail(user.getEmail().trim().toLowerCase());
+
+        if (user.getPhoneNumber() != null) {
+            user.setPhoneNumber(user.getPhoneNumber().trim());
+            if (user.getPhoneNumber().isEmpty()) {
+                user.setPhoneNumber(null);
+            }
+        }
+
+        // Default role is CUSTOMER for self-registration
+        if (user.getRole() == null || user.getRole().isBlank()) {
+            user.setRole("CUSTOMER");
+        }
+
+        // Save handles hashing and status defaulting
+        return saveUser(user);
     }
 
     public void deleteUser(Long id) {

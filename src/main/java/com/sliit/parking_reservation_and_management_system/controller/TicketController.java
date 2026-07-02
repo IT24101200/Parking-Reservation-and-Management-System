@@ -39,7 +39,7 @@ public class TicketController {
             throw new RuntimeException("User not found");
         }
 
-        return userOpt.get().getUserID();
+        return userOpt.get().getUserId();
     }
 
     // ==========================

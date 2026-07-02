@@ -65,7 +65,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .userDetailsService(customUserDetailsService) // Configure our custom UserDetailsService
-                .csrf(csrf -> csrf.disable()) // ❗ disable only for development/testing
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
                 .authorizeHttpRequests(auth -> auth
                         // Role-based access (prefix "ROLE_" is added automatically by Spring)
                         .requestMatchers("/admin/**").hasRole("ADMIN")
