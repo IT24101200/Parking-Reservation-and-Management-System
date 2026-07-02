@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parking Slot Manager Dashboard</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .stats-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stats-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        
+        .slot-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .slot-card {
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .slot-available { 
+            background-color: #d4edda; 
+            border-color: #28a745; 
+        }
+        
+        .slot-occupied { 
+            background-color: #f8d7da; 
+            border-color: #dc3545; 
+        }
+        
+        .slot-under_maintenance { 
+            background-color: #fff3cd; 
+            border-color: #ffc107; 
+        }
+        
+        .slot-out_of_order { 
+            background-color: #f1f3f4; 
+            border-color: #6c757d; 
+        }
+        
+        .slot-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .status-indicator {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+        
+        .bg-available { background-color: #28a745; }
+        .bg-occupied { background-color: #dc3545; }
+        .bg-under_maintenance { background-color: #ffc107; }
+        .bg-out_of_order { background-color: #6c757d; }
+        
+        .control-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .zone-selector {
+            margin-bottom: 1rem;
+        }
+        
+        .real-time-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            z-index: 1000;
+        }
+        
+        .conflict-alert {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Real-time Status Indicator -->
+    <div class="real-time-indicator">
+        <i class="fas fa-circle" id="statusIndicator"></i>
+        <span id="statusText">Connected</span>
+    </div>
+
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h1><i class="fas fa-car"></i> Parking Slot Manager Dashboard</h1>
+                    <p class="mb-0">Real-time parking management system</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <button class="btn btn-light me-2" onclick="refreshDashboard()">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                    <button class="btn btn-light me-2" onclick="processExpiredBookings()">
+                        <i class="fas fa-clock"></i> Process Expired
+                    </button>
+                    <a th:href="@{/logout}" class="btn btn-outline-light">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stats-card text-center">
+                    <div class="stats-number text-primary" th:text="${totalSlots ?: 0}">0</div>
+                    <div class="text-muted">Total Slots</div>
+                    <i class="fas fa-parking fa-2x text-primary mt-2"></i>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card text-center">
+                    <div class="stats-number text-success" th:text="${availableSlots ?: 0}">0</div>
+                    <div class="text-muted">Available</div>
+                    <i class="fas fa-check-circle fa-2x text-success mt-2"></i>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card text-center">
+                    <div class="stats-number text-danger" th:text="${occupiedSlots ?: 0}">0</div>
+                    <div class="text-muted">Occupied</div>
+                    <i class="fas fa-car fa-2x text-danger mt-2"></i>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card text-center">
+                    <div class="stats-number text-warning" th:text="${maintenanceSlots ?: 0}">0</div>
+                    <div class="text-muted">Maintenance</div>
+                    <i class="fas fa-tools fa-2x text-warning mt-2"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Conflict Alerts -->
+        <div th:if="${conflictedBookings != null and !conflictedBookings.empty}" class="row mb-4">
+            <div class="col-12">
+                <div class="conflict-alert">
+                    <h5><i class="fas fa-exclamation-triangle"></i> Booking Conflicts Detected</h5>
+                    <div th:each="conflict : ${conflictedBookings}" class="mb-2">
+                        <strong>Booking #<span th:text="${conflict.bookingId}"></span></strong> - 
+                        Slot <span th:text="${conflict.parkingSlot.slotNumber}"></span>: 
+                        <span th:text="${conflict.conflictReason}"></span>
+                        <button class="btn btn-sm btn-outline-primary ms-2" 
+                                th:onclick="'resolveConflict(' + ${conflict.bookingId} + ')'">
+                            Resolve
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Slot Management Panel -->
+            <div class="col-md-8">
+                <!-- Control Panel -->
+                <div class="control-panel">
+                    <div class="row align-items-center">
+                        <div class="col-md-4">
+                            <div class="zone-selector">
+                                <label>Filter by Zone:</label>
+                                <select class="form-select" id="zoneFilter" onchange="filterSlots()">
+                                    <option value="">All Zones</option>
+                                    <option value="ZONE_A">Zone A</option>
+                                    <option value="ZONE_B">Zone B</option>
+                                    <option value="ZONE_C">Zone C</option>
+                                    <option value="ZONE_D">Zone D</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="zone-selector">
+                                <label>Filter by Status:</label>
+                                <select class="form-select" id="statusFilter" onchange="filterSlots()">
+                                    <option value="">All Status</option>
+                                    <option value="AVAILABLE">Available</option>
+                                    <option value="OCCUPIED">Occupied</option>
+                                    <option value="UNDER_MAINTENANCE">Maintenance</option>
+                                    <option value="OUT_OF_ORDER">Out of Order</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#addSlotModal">
+                                <i class="fas fa-plus"></i> Add New Slot
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slot Grid -->
+                <div class="slot-grid" id="slotGrid">
+                    <div th:each="slot : ${allSlots}" 
+                         th:class="'slot-card slot-' + ${#strings.toLowerCase(slot.status)}"
+                         th:data-zone="${slot.zone}"
+                         th:data-status="${slot.status}"
+                         th:onclick="'showSlotDetails(' + ${slot.slotId} + ')'">
+                        
+                        <div class="fw-bold" th:text="${slot.slotNumber}">A1</div>
+                        <div class="small text-muted" th:text="${slot.zone + ' - Floor ' + slot.floor}">Zone A - Floor 1</div>
+                        <div class="small" th:text="${slot.slotType?.typeName ?: 'Standard'}">Standard</div>
+                        
+                        <div class="mt-2">
+                            <span th:class="'status-indicator bg-' + ${#strings.toLowerCase(slot.status)}"></span>
+                            <span class="small" th:text="${#strings.replace(slot.status, '_', ' ')}">Available</span>
+                        </div>
+                        
+                        <div th:if="${!slot.isOperational}" class="small text-warning mt-1">
+                            <i class="fas fa-tools"></i> Maintenance
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Panel -->
+            <div class="col-md-4">
+                <!-- Occupancy Chart -->
+                <div class="control-panel">
+                    <h5>Occupancy Overview</h5>
+                    <canvas id="occupancyChart" width="300" height="300"></canvas>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="control-panel">
+                    <h5>Quick Actions</h5>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-success" onclick="markAllAvailable()">
+                            <i class="fas fa-check-circle"></i> Mark All Available
+                        </button>
+                        <button class="btn btn-warning" onclick="bulkMaintenanceMode()">
+                            <i class="fas fa-tools"></i> Bulk Maintenance
+                        </button>
+                        <button class="btn btn-info" onclick="generateReport()">
+                            <i class="fas fa-file-pdf"></i> Generate Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Slot Modal -->
+    <div class="modal fade" id="addSlotModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Parking Slot</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addSlotForm" th:action="@{/slot-manager/create-slot}" method="post">
+                        <div class="mb-3">
+                            <label for="slotNumber" class="form-label">Slot Number</label>
+                            <input type="text" class="form-control" id="slotNumber" name="slotNumber" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="location" class="form-label">Location</label>
+                            <input type="text" class="form-control" id="location" name="location" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="zone" class="form-label">Zone</label>
+                            <select class="form-select" id="zone" name="zone" required>
+                                <option value="">Select Zone</option>
+                                <option value="ZONE_A">Zone A</option>
+                                <option value="ZONE_B">Zone B</option>
+                                <option value="ZONE_C">Zone C</option>
+                                <option value="ZONE_D">Zone D</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="floor" class="form-label">Floor</label>
+                            <input type="number" class="form-control" id="floor" name="floor" min="1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="slotType" class="form-label">Slot Type</label>
+                            <select class="form-select" id="slotType" name="slotType.typeId" required>
+                                <option value="">Select Type</option>
+                                <option th:each="type : ${slotTypes}" 
+                                        th:value="${type.typeId}" 
+                                        th:text="${type.typeName + ' - $' + type.hourlyRate + '/hr'}">
+                                    Standard - $5/hr
+                                </option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" form="addSlotForm" class="btn btn-primary">Create Slot</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slot Details Modal -->
+    <div class="modal fade" id="slotDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Slot Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="slotDetailsContent">
+                    <!-- Content will be loaded dynamically -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-warning" onclick="toggleMaintenance()">
+                        <i class="fas fa-tools"></i> Toggle Maintenance
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="changeStatus()">
+                        <i class="fas fa-edit"></i> Change Status
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        let currentSlotId = null;
+        let refreshInterval;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            startRealTimeUpdates();
+        });
+
+        function initializeCharts() {
+            // Occupancy Pie Chart
+            const occupancyCtx = document.getElementById('occupancyChart').getContext('2d');
+            new Chart(occupancyCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Available', 'Occupied', 'Maintenance'],
+                    datasets: [{
+                        data: [
+                            parseInt(document.querySelector('.text-success .stats-number').textContent),
+                            parseInt(document.querySelector('.text-danger .stats-number').textContent),
+                            parseInt(document.querySelector('.text-warning .stats-number').textContent)
+                        ],
+                        backgroundColor: ['#28a745', '#dc3545', '#ffc107']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        function startRealTimeUpdates() {
+            // Update status indicator
+            setInterval(function() {
+                const indicator = document.getElementById('statusIndicator');
+                indicator.style.color = '#28a745'; // Green for connected
+                document.getElementById('statusText').textContent = 'Real-time Connected';
+            }, 1000);
+
+            // Refresh dashboard data every 30 seconds
+            refreshInterval = setInterval(refreshDashboard, 30000);
+        }
+
+        function filterSlots() {
+            const zoneFilter = document.getElementById('zoneFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            const slots = document.querySelectorAll('.slot-card');
+
+            slots.forEach(slot => {
+                const slotZone = slot.getAttribute('data-zone');
+                const slotStatus = slot.getAttribute('data-status');
+                
+                const zoneMatch = !zoneFilter || slotZone === zoneFilter;
+                const statusMatch = !statusFilter || slotStatus === statusFilter;
+                
+                if (zoneMatch && statusMatch) {
+                    slot.style.display = 'block';
+                } else {
+                    slot.style.display = 'none';
+                }
+            });
+        }
+
+        function showSlotDetails(slotId) {
+            currentSlotId = slotId;
+            
+            // Fetch slot details via AJAX
+            fetch(`/slot-manager/api/slots/${slotId}`)
+                .then(response => response.json())
+                .then(slot => {
+                    const content = `
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Slot Information</h6>
+                                <p><strong>Slot Number:</strong> ${slot.slotNumber}</p>
+                                <p><strong>Location:</strong> ${slot.location}</p>
+                                <p><strong>Zone:</strong> ${slot.zone}</p>
+                                <p><strong>Floor:</strong> ${slot.floor}</p>
+                                <p><strong>Type:</strong> ${slot.slotType?.typeName || 'N/A'}</p>
+                                <p><strong>Hourly Rate:</strong> $${slot.slotType?.hourlyRate || 'N/A'}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Status Information</h6>
+                                <p><strong>Current Status:</strong> 
+                                    <span class="badge bg-${getStatusColor(slot.status)}">${slot.status.replace('_', ' ')}</span>
+                                </p>
+                                <p><strong>Operational:</strong> ${slot.isOperational ? 'Yes' : 'No'}</p>
+                                ${slot.maintenanceNotes ? `<p><strong>Maintenance Notes:</strong> ${slot.maintenanceNotes}</p>` : ''}
+                                ${slot.lastMaintenanceDate ? `<p><strong>Last Maintenance:</strong> ${new Date(slot.lastMaintenanceDate).toLocaleDateString()}</p>` : ''}
+                            </div>
+                        </div>
+                    `;
+                    
+                    document.getElementById('slotDetailsContent').innerHTML = content;
+                    new bootstrap.Modal(document.getElementById('slotDetailsModal')).show();
+                })
+                .catch(error => {
+                    alert('Error loading slot details: ' + error.message);
+                });
+        }
+
+        function getStatusColor(status) {
+            switch(status) {
+                case 'AVAILABLE': return 'success';
+                case 'OCCUPIED': return 'danger';
+                case 'UNDER_MAINTENANCE': return 'warning';
+                case 'OUT_OF_ORDER': return 'secondary';
+                default: return 'info';
+            }
+        }
+
+        function changeStatus() {
+            if (!currentSlotId) return;
+            
+            const newStatus = prompt('Enter new status (AVAILABLE, OCCUPIED, UNDER_MAINTENANCE, OUT_OF_ORDER):');
+            if (!newStatus) return;
+            
+            fetch(`/slot-manager/api/slots/${currentSlotId}/status`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ status: newStatus })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                } else {
+                    alert('Status updated successfully!');
+                    refreshDashboard();
+                    bootstrap.Modal.getInstance(document.getElementById('slotDetailsModal')).hide();
+                }
+            })
+            .catch(error => {
+                alert('Error updating status: ' + error.message);
+            });
+        }
+
+        function toggleMaintenance() {
+            if (!currentSlotId) return;
+            
+            const underMaintenance = confirm('Put this slot under maintenance?');
+            const reason = underMaintenance ? prompt('Enter maintenance reason:') : null;
+            
+            fetch(`/slot-manager/api/slots/${currentSlotId}/maintenance`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    underMaintenance: underMaintenance,
+                    reason: reason 
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                } else {
+                    alert('Maintenance status updated successfully!');
+                    refreshDashboard();
+                    bootstrap.Modal.getInstance(document.getElementById('slotDetailsModal')).hide();
+                }
+            })
+            .catch(error => {
+                alert('Error updating maintenance status: ' + error.message);
+            });
+        }
+
+        function resolveConflict(bookingId) {
+            const resolution = prompt('Enter conflict resolution notes:');
+            if (!resolution) return;
+            
+            fetch(`/slot-manager/api/conflicts/${bookingId}/resolve`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ resolution: resolution })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                } else {
+                    alert('Conflict resolved successfully!');
+                    refreshDashboard();
+                }
+            })
+            .catch(error => {
+                alert('Error resolving conflict: ' + error.message);
+            });
+        }
+
+        function processExpiredBookings() {
+            fetch('/slot-manager/api/cleanup/expired-bookings', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                } else {
+                    alert('Expired bookings processed successfully!');
+                    refreshDashboard();
+                }
+            })
+            .catch(error => {
+                alert('Error processing expired bookings: ' + error.message);
+            });
+        }
+
+        function refreshDashboard() {
+            location.reload(); // Simple refresh - could be made more sophisticated with AJAX updates
+        }
+
+        function markAllAvailable() {
+            if (confirm('Mark all operational slots as available? This will override current occupied status.')) {
+                // Implementation would require a bulk update API endpoint
+                alert('Feature would be implemented with bulk update API');
+            }
+        }
+
+        function bulkMaintenanceMode() {
+            const zone = prompt('Enter zone for bulk maintenance (ZONE_A, ZONE_B, etc.) or leave blank for all:');
+            const reason = prompt('Enter maintenance reason:');
+            
+            if (reason) {
+                // Implementation would require a bulk maintenance API endpoint
+                alert('Bulk maintenance feature would be implemented with dedicated API');
+            }
+        }
+
+        function generateReport() {
+            // This would generate a downloadable PDF report
+            alert('Report generation feature would be implemented');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<html>
+<head>
+<title>CustomAuthenticationFailureHandler.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cf8e6d;}
+.s1 { color: #bcbec4;}
+.s2 { color: #bcbec4;}
+.s3 { color: #6aab73;}
+.s4 { color: #7a7e85;}
+</style>
+</head>
+<body bgcolor="#1e1f22">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+CustomAuthenticationFailureHandler.java</font>
+</center></td></tr></table>
+<pre><span class="s0">package </span><span class="s1">com</span><span class="s2">.</span><span class="s1">sliit</span><span class="s2">.</span><span class="s1">parking_reservation_and_management_system</span><span class="s2">.</span><span class="s1">config</span><span class="s2">;</span>
+
+<span class="s0">import </span><span class="s1">com</span><span class="s2">.</span><span class="s1">sliit</span><span class="s2">.</span><span class="s1">parking_reservation_and_management_system</span><span class="s2">.</span><span class="s1">repository</span><span class="s2">.</span><span class="s1">UserRepository</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">jakarta</span><span class="s2">.</span><span class="s1">servlet</span><span class="s2">.</span><span class="s1">ServletException</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">jakarta</span><span class="s2">.</span><span class="s1">servlet</span><span class="s2">.</span><span class="s1">http</span><span class="s2">.</span><span class="s1">HttpServletRequest</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">jakarta</span><span class="s2">.</span><span class="s1">servlet</span><span class="s2">.</span><span class="s1">http</span><span class="s2">.</span><span class="s1">HttpServletResponse</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">org</span><span class="s2">.</span><span class="s1">springframework</span><span class="s2">.</span><span class="s1">security</span><span class="s2">.</span><span class="s1">core</span><span class="s2">.</span><span class="s1">AuthenticationException</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">org</span><span class="s2">.</span><span class="s1">springframework</span><span class="s2">.</span><span class="s1">security</span><span class="s2">.</span><span class="s1">web</span><span class="s2">.</span><span class="s1">authentication</span><span class="s2">.</span><span class="s1">AuthenticationFailureHandler</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">org</span><span class="s2">.</span><span class="s1">springframework</span><span class="s2">.</span><span class="s1">stereotype</span><span class="s2">.</span><span class="s1">Component</span><span class="s2">;</span>
+
+<span class="s0">import </span><span class="s1">java</span><span class="s2">.</span><span class="s1">io</span><span class="s2">.</span><span class="s1">IOException</span><span class="s2">;</span>
+
+<span class="s1">@Component</span>
+<span class="s0">public class </span><span class="s1">CustomAuthenticationFailureHandler </span><span class="s0">implements </span><span class="s1">AuthenticationFailureHandler </span><span class="s2">{</span>
+
+    <span class="s0">private final </span><span class="s1">UserRepository userRepository</span><span class="s2">;</span>
+
+    <span class="s0">public </span><span class="s1">CustomAuthenticationFailureHandler</span><span class="s2">(</span><span class="s1">UserRepository userRepository</span><span class="s2">) {</span>
+        <span class="s0">this</span><span class="s2">.</span><span class="s1">userRepository </span><span class="s2">= </span><span class="s1">userRepository</span><span class="s2">;</span>
+    <span class="s2">}</span>
+
+    <span class="s1">@Override</span>
+    <span class="s0">public void </span><span class="s1">onAuthenticationFailure</span><span class="s2">(</span><span class="s1">HttpServletRequest request</span><span class="s2">,</span>
+                                        <span class="s1">HttpServletResponse response</span><span class="s2">,</span>
+                                        <span class="s1">AuthenticationException exception</span><span class="s2">)</span>
+            <span class="s0">throws </span><span class="s1">IOException</span><span class="s2">, </span><span class="s1">ServletException </span><span class="s2">{</span>
+
+        <span class="s1">String email </span><span class="s2">= </span><span class="s1">request</span><span class="s2">.</span><span class="s1">getParameter</span><span class="s2">(</span><span class="s3">&quot;username&quot;</span><span class="s2">); </span><span class="s4">// must match login form input name</span>
+        <span class="s1">String errorMessage </span><span class="s2">= </span><span class="s3">&quot;Invalid username or password&quot;</span><span class="s2">;</span>
+
+        <span class="s1">userRepository</span><span class="s2">.</span><span class="s1">findByEmail</span><span class="s2">(</span><span class="s1">email</span><span class="s2">).</span><span class="s1">ifPresentOrElse</span><span class="s2">(</span><span class="s1">user -&gt; </span><span class="s2">{</span>
+            <span class="s0">if </span><span class="s2">(</span><span class="s3">&quot;INACTIVE&quot;</span><span class="s2">.</span><span class="s1">equalsIgnoreCase</span><span class="s2">(</span><span class="s1">user</span><span class="s2">.</span><span class="s1">getStatus</span><span class="s2">())) {</span>
+                <span class="s1">request</span><span class="s2">.</span><span class="s1">getSession</span><span class="s2">().</span><span class="s1">setAttribute</span><span class="s2">(</span><span class="s3">&quot;error&quot;</span><span class="s2">, </span><span class="s3">&quot;Your account has been temporarily deactivated.&quot;</span><span class="s2">);</span>
+            <span class="s2">} </span><span class="s0">else </span><span class="s2">{</span>
+                <span class="s1">request</span><span class="s2">.</span><span class="s1">getSession</span><span class="s2">().</span><span class="s1">setAttribute</span><span class="s2">(</span><span class="s3">&quot;error&quot;</span><span class="s2">, </span><span class="s1">errorMessage</span><span class="s2">);</span>
+            <span class="s2">}</span>
+        <span class="s2">}, () </span><span class="s1">-&gt; request</span><span class="s2">.</span><span class="s1">getSession</span><span class="s2">().</span><span class="s1">setAttribute</span><span class="s2">(</span><span class="s3">&quot;error&quot;</span><span class="s2">, </span><span class="s1">errorMessage</span><span class="s2">));</span>
+
+        <span class="s4">// Redirect without &quot;?error&quot; so only our message shows</span>
+        <span class="s1">response</span><span class="s2">.</span><span class="s1">sendRedirect</span><span class="s2">(</span><span class="s3">&quot;/login&quot;</span><span class="s2">);</span>
+    <span class="s2">}</span>
+
+<span class="s2">}</span>
+</pre>
+</body>
+</html>

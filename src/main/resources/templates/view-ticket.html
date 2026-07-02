@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>View Ticket - Customer Portal | ParkEase</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #3498db;
+            --primary-dark: #2980b9;
+            --secondary: #2c3e50;
+            --accent: #9b59b6;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #34495e;
+            --gray: #95a5a6;
+            --white: #ffffff;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --radius: 12px;
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        /* Navigation Bar Styles */
+        .navbar {
+            background: var(--secondary);
+            color: var(--white);
+            padding: 0;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        
+        .nav-brand {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--white);
+            text-decoration: none;
+            padding: 18px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .nav-brand i {
+            color: var(--primary);
+        }
+        
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            align-items: center;
+        }
+        
+        .nav-item {
+            margin: 0;
+            position: relative;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--white);
+            text-decoration: none;
+            padding: 18px 20px;
+            transition: var(--transition);
+            border-radius: 0;
+            font-weight: 500;
+        }
+        
+        .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--white);
+        }
+        
+        .nav-link.active {
+            background-color: var(--primary);
+            color: var(--white);
+        }
+        
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--white);
+        }
+        
+        .logout-btn {
+            background-color: var(--danger);
+            padding: 10px 20px;
+            border-radius: 6px;
+            margin-left: 10px;
+            transition: var(--transition);
+        }
+        
+        .logout-btn:hover {
+            background-color: #c0392b;
+            transform: translateY(-2px);
+        }
+        
+        /* Mobile Navigation */
+        .nav-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .nav-toggle {
+                display: block;
+            }
+            
+            .nav-menu {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background-color: var(--secondary);
+                box-shadow: var(--shadow);
+            }
+            
+            .nav-menu.active {
+                display: flex;
+            }
+            
+            .nav-link {
+                padding: 15px 20px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            .nav-container {
+                flex-wrap: wrap;
+                position: relative;
+            }
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        
+        /* Page Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .page-title {
+            font-size: 2.2em;
+            font-weight: 700;
+            color: var(--dark);
+            margin: 0;
+        }
+        
+        .page-actions {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        /* Ticket Header */
+        .ticket-header {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .ticket-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+        }
+        
+        .ticket-title {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--dark);
+            margin: 0 0 15px 0;
+            line-height: 1.3;
+        }
+        
+        .ticket-id {
+            color: var(--gray);
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .ticket-id i {
+            color: var(--primary);
+        }
+        
+        .status-priority-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        /* Badges */
+        .badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .status-open {
+            background-color: rgba(52, 152, 219, 0.15);
+            color: var(--primary);
+        }
+        
+        .status-in_progress {
+            background-color: rgba(243, 156, 18, 0.15);
+            color: var(--warning);
+        }
+        
+        .status-resolved {
+            background-color: rgba(46, 204, 113, 0.15);
+            color: var(--success);
+        }
+        
+        .status-closed {
+            background-color: rgba(149, 165, 166, 0.15);
+            color: var(--gray);
+        }
+        
+        .priority-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .priority-low {
+            background-color: rgba(46, 204, 113, 0.15);
+            color: var(--success);
+        }
+        
+        .priority-medium {
+            background-color: rgba(243, 156, 18, 0.15);
+            color: var(--warning);
+        }
+        
+        .priority-high {
+            background-color: rgba(231, 76, 60, 0.15);
+            color: var(--danger);
+        }
+        
+        .priority-urgent {
+            background-color: rgba(192, 57, 43, 0.15);
+            color: #c0392b;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .category-badge {
+            background-color: rgba(155, 89, 182, 0.15);
+            color: var(--accent);
+        }
+        
+        /* Details Grid */
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .detail-section {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+        
+        .detail-section:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+        
+        .detail-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--light);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .detail-title i {
+            color: var(--primary);
+        }
+        
+        .detail-item {
+            margin-bottom: 16px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: var(--gray);
+            margin-bottom: 6px;
+            font-size: 0.95em;
+        }
+        
+        .detail-value {
+            color: var(--dark);
+            font-weight: 500;
+            font-size: 1.05em;
+        }
+        
+        /* Description Section */
+        .description-section {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            transition: var(--transition);
+        }
+        
+        .description-section:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+        
+        .description-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .description-title i {
+            color: var(--primary);
+        }
+        
+        .description-content {
+            line-height: 1.7;
+            color: var(--dark);
+            white-space: pre-wrap;
+            background: rgba(236, 240, 241, 0.3);
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        /* Actions */
+        .actions {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid var(--light);
+        }
+        
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 28px;
+            background-color: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+        
+        .btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08);
+        }
+        
+        .btn-warning {
+            background-color: var(--warning);
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background-color: #e0a800;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        
+        .btn-secondary {
+            background-color: var(--gray);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+        }
+        
+        .btn-success:hover {
+            background-color: #27ae60;
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid #ddd;
+            color: var(--gray);
+            font-size: 0.9em;
+        }
+        
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+        
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .page-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .page-actions {
+                justify-content: center;
+            }
+            
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .status-priority-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+    <script>
+        function toggleMobileMenu() {
+            const navMenu = document.querySelector('.nav-menu');
+            navMenu.classList.toggle('active');
+        }
+        
+        // Add fade-in animation to elements when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            const elements = document.querySelectorAll('.ticket-header, .detail-section, .description-section');
+            elements.forEach((el, index) => {
+                el.classList.add('fade-in');
+                el.classList.add(`delay-${(index % 3) + 1}`);
+            });
+        });
+    </script>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/customer/dashboard" class="nav-brand">
+                <i class="fas fa-parking"></i> ParkEase
+            </a>
+            
+            <button class="nav-toggle" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/customer/dashboard" class="nav-link">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/customer/parking/book" class="nav-link">
+                        <i class="fas fa-map-marker-alt"></i> Book Parking
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/customer/tickets/create" class="nav-link">
+                        <i class="fas fa-ticket-alt"></i> Create Ticket
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/customer/tickets/my-tickets" class="nav-link active">
+                        <i class="fas fa-clipboard-list"></i> My Tickets
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/customer/profile" class="nav-link">
+                        <i class="fas fa-user-circle"></i> Profile
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/logout}" class="nav-link logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="fas fa-ticket-alt"></i> Ticket Details
+            </h1>
+            <div class="page-actions">
+                <a href="/customer/tickets/my-tickets" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to My Tickets
+                </a>
+            </div>
+        </div>
+
+        <!-- Ticket Header -->
+        <div class="ticket-header">
+            <h1 class="ticket-title" th:text="${ticket.title}">Ticket Title</h1>
+            <div class="ticket-id">
+                <i class="fas fa-hashtag"></i>
+                <span th:text="'Ticket ID: #' + ${ticket.ticketID}">Ticket ID: #001</span>
+            </div>
+            
+            <div class="status-priority-row">
+                <div>
+                    <span class="status-badge" 
+                          th:classappend="'status-' + ${#strings.toLowerCase(#strings.replace(ticket.status, '_', '_'))}">
+                        <i class="fas fa-circle"></i>
+                        <span th:text="${#strings.replace(ticket.status, '_', ' ')}">Open</span>
+                    </span>
+                </div>
+                <div>
+                    <span class="priority-badge" 
+                          th:classappend="'priority-' + ${#strings.toLowerCase(ticket.priority)}">
+                        <i class="fas fa-flag"></i>
+                        <span th:text="${#strings.toLowerCase(ticket.priority) + ' Priority'}">Medium Priority</span>
+                    </span>
+                </div>
+                <div th:if="${ticket.category != null and !#strings.isEmpty(ticket.category)}">
+                    <span class="badge category-badge">
+                        <i class="fas fa-tag"></i>
+                        <span th:text="${#strings.replace(ticket.category, '_', ' ')}">Category</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Details Grid -->
+        <div class="details-grid">
+            <div class="detail-section">
+                <div class="detail-title">
+                    <i class="fas fa-info-circle"></i> Ticket Information
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Created Date:</div>
+                    <div class="detail-value" th:text="${#temporals.format(ticket.createdAt, 'EEEE, MMMM dd, yyyy HH:mm')}">
+                        Monday, January 01, 2024 10:00
+                    </div>
+                </div>
+                <div class="detail-item" th:if="${ticket.updatedAt}">
+                    <div class="detail-label">Last Updated:</div>
+                    <div class="detail-value" th:text="${#temporals.format(ticket.updatedAt, 'EEEE, MMMM dd, yyyy HH:mm')}">
+                        Monday, January 01, 2024 10:30
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Status:</div>
+                    <div class="detail-value" th:text="${#strings.replace(ticket.status, '_', ' ')}">Open</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Priority:</div>
+                    <div class="detail-value" th:text="${#strings.toLowerCase(ticket.priority)}">Medium</div>
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <div class="detail-title">
+                    <i class="fas fa-user"></i> Customer Information
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Customer Name:</div>
+                    <div class="detail-value" th:text="${ticket.customerName}">John Doe</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Email:</div>
+                    <div class="detail-value" th:text="${ticket.customerEmail}">john.doe@email.com</div>
+                </div>
+                <div class="detail-item" th:if="${ticket.category != null and !#strings.isEmpty(ticket.category)}">
+                    <div class="detail-label">Category:</div>
+                    <div class="detail-value" th:text="${#strings.replace(ticket.category, '_', ' ')}">Technical Support</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Description Section -->
+        <div class="description-section">
+            <div class="description-title">
+                <i class="fas fa-align-left"></i> Description
+            </div>
+            <div class="description-content" th:text="${ticket.description}">
+                This is the detailed description of the issue or request submitted by the customer.
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions">
+            <a th:href="@{/customer/tickets/edit/{id}(id=${ticket.ticketID})}" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Edit Ticket
+            </a>
+            
+            <form th:action="@{/customer/tickets/delete/{id}(id=${ticket.ticketID})}" 
+                  method="post" style="display: inline;">
+                <button type="submit" class="btn btn-danger" 
+                        onclick="return confirm('Are you sure you want to delete this ticket? This action cannot be undone.')">
+                    <i class="fas fa-trash"></i> Delete Ticket
+                </button>
+            </form>
+            
+            <a href="/customer/tickets/create" class="btn btn-success">
+                <i class="fas fa-plus-circle"></i> Create New Ticket
+            </a>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>&copy; 2023 ParkEase. All rights reserved. | <a href="#" style="color: var(--primary); text-decoration: none;">Privacy Policy</a> | <a href="#" style="color: var(--primary); text-decoration: none;">Terms of Service</a></p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<html>
+<head>
+<title>SecurityConfig.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cf8e6d;}
+.s1 { color: #bcbec4;}
+.s2 { color: #bcbec4;}
+.s3 { color: #7a7e85;}
+.s4 { color: #6aab73;}
+</style>
+</head>
+<body bgcolor="#1e1f22">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+SecurityConfig.java</font>
+</center></td></tr></table>
+<pre><span class="s0">package </span><span class="s1">com</span><span class="s2">.</span><span class="s1">sliit</span><span class="s2">.</span><span class="s1">parking_reservation_and_management_system</span><span class="s2">.</span><span class="s1">config</span><span class="s2">;</span>
+
+<span class="s0">import </span><span class="s1">com</span><span class="s2">.</span><span class="s1">sliit</span><span class="s2">.</span><span class="s1">parking_reservation_and_management_system</span><span class="s2">.</span><span class="s1">service</span><span class="s2">.</span><span class="s1">CustomUserDetailsService</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">org</span><span class="s2">.</span><span class="s1">springframework</span><span class="s2">.</span><span class="s1">context</span><span class="s2">.</span><span class="s1">annotation</span><span class="s2">.</span><span class="s1">Bean</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">org</span><span class="s2">.</span><span class="s1">springframework</span><span class="s2">.</span><span class="s1">context</span><span class="s2">.</span><span class="s1">annotation</span><span class="s2">.</span><span class="s1">Configuration</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">org</span><span class="s2">.</span><span class="s1">springframework</span><span class="s2">.</span><span class="s1">security</span><span class="s2">.</span><span class="s1">authentication</span><span class="s2">.</span><span class="s1">AuthenticationManager</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">org</span><span class="s2">.</span><span class="s1">springframework</span><span class="s2">.</span><span class="s1">security</span><span class="s2">.</span><span class="s1">config</span><span class="s2">.</span><span class="s1">annotation</span><span class="s2">.</span><span class="s1">authentication</span><span class="s2">.</span><span class="s1">configuration</span><span class="s2">.</span><span class="s1">AuthenticationConfiguration</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">org</span><span class="s2">.</span><span class="s1">springframework</span><span class="s2">.</span><span class="s1">security</span><span class="s2">.</span><span class="s1">config</span><span class="s2">.</span><span class="s1">annotation</span><span class="s2">.</span><span class="s1">web</span><span class="s2">.</span><span class="s1">builders</span><span class="s2">.</span><span class="s1">HttpSecurity</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">org</span><span class="s2">.</span><span class="s1">springframework</span><span class="s2">.</span><span class="s1">security</span><span class="s2">.</span><span class="s1">crypto</span><span class="s2">.</span><span class="s1">bcrypt</span><span class="s2">.</span><span class="s1">BCryptPasswordEncoder</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">org</span><span class="s2">.</span><span class="s1">springframework</span><span class="s2">.</span><span class="s1">security</span><span class="s2">.</span><span class="s1">crypto</span><span class="s2">.</span><span class="s1">password</span><span class="s2">.</span><span class="s1">PasswordEncoder</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">org</span><span class="s2">.</span><span class="s1">springframework</span><span class="s2">.</span><span class="s1">security</span><span class="s2">.</span><span class="s1">web</span><span class="s2">.</span><span class="s1">SecurityFilterChain</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">org</span><span class="s2">.</span><span class="s1">springframework</span><span class="s2">.</span><span class="s1">security</span><span class="s2">.</span><span class="s1">web</span><span class="s2">.</span><span class="s1">authentication</span><span class="s2">.</span><span class="s1">AuthenticationSuccessHandler</span><span class="s2">;</span>
+
+<span class="s1">@Configuration</span>
+<span class="s0">public class </span><span class="s1">SecurityConfig </span><span class="s2">{</span>
+
+    <span class="s3">// Password encoder bean (BCrypt is recommended for secure hashing)</span>
+    <span class="s1">@Bean</span>
+    <span class="s0">public </span><span class="s1">PasswordEncoder passwordEncoder</span><span class="s2">() {</span>
+        <span class="s0">return new </span><span class="s1">BCryptPasswordEncoder</span><span class="s2">();</span>
+    <span class="s2">}</span>
+
+    <span class="s3">// Authentication manager bean (Spring Security uses this internally)</span>
+    <span class="s1">@Bean</span>
+    <span class="s0">public </span><span class="s1">AuthenticationManager authenticationManager</span><span class="s2">(</span><span class="s1">AuthenticationConfiguration authConfig</span><span class="s2">) </span><span class="s0">throws </span><span class="s1">Exception </span><span class="s2">{</span>
+        <span class="s0">return </span><span class="s1">authConfig</span><span class="s2">.</span><span class="s1">getAuthenticationManager</span><span class="s2">();</span>
+    <span class="s2">}</span>
+
+    <span class="s0">private final </span><span class="s1">CustomAuthenticationFailureHandler customAuthenticationFailureHandler</span><span class="s2">;</span>
+    <span class="s0">private final </span><span class="s1">CustomUserDetailsService customUserDetailsService</span><span class="s2">;</span>
+
+    <span class="s0">public </span><span class="s1">SecurityConfig</span><span class="s2">(</span><span class="s1">CustomAuthenticationFailureHandler customAuthenticationFailureHandler</span><span class="s2">,</span>
+            <span class="s1">CustomUserDetailsService customUserDetailsService</span><span class="s2">) {</span>
+        <span class="s0">this</span><span class="s2">.</span><span class="s1">customAuthenticationFailureHandler </span><span class="s2">= </span><span class="s1">customAuthenticationFailureHandler</span><span class="s2">;</span>
+        <span class="s0">this</span><span class="s2">.</span><span class="s1">customUserDetailsService </span><span class="s2">= </span><span class="s1">customUserDetailsService</span><span class="s2">;</span>
+    <span class="s2">}</span>
+
+    <span class="s3">// Success handler: redirects users based on their role</span>
+    <span class="s1">@Bean</span>
+    <span class="s0">public </span><span class="s1">AuthenticationSuccessHandler customSuccessHandler</span><span class="s2">() {</span>
+        <span class="s0">return </span><span class="s2">(</span><span class="s1">request</span><span class="s2">, </span><span class="s1">response</span><span class="s2">, </span><span class="s1">authentication</span><span class="s2">) </span><span class="s1">-&gt; </span><span class="s2">{</span>
+            <span class="s1">var authorities </span><span class="s2">= </span><span class="s1">authentication</span><span class="s2">.</span><span class="s1">getAuthorities</span><span class="s2">();</span>
+            <span class="s1">String redirectUrl </span><span class="s2">= </span><span class="s4">&quot;/&quot;</span><span class="s2">;</span>
+
+            <span class="s0">if </span><span class="s2">(</span><span class="s1">authorities</span><span class="s2">.</span><span class="s1">stream</span><span class="s2">().</span><span class="s1">anyMatch</span><span class="s2">(</span><span class="s1">a -&gt; a</span><span class="s2">.</span><span class="s1">getAuthority</span><span class="s2">().</span><span class="s1">equals</span><span class="s2">(</span><span class="s4">&quot;ROLE_ADMIN&quot;</span><span class="s2">))) {</span>
+                <span class="s1">redirectUrl </span><span class="s2">= </span><span class="s4">&quot;/admin/dashboard&quot;</span><span class="s2">;</span>
+            <span class="s2">} </span><span class="s0">else if </span><span class="s2">(</span><span class="s1">authorities</span><span class="s2">.</span><span class="s1">stream</span><span class="s2">().</span><span class="s1">anyMatch</span><span class="s2">(</span><span class="s1">a -&gt; a</span><span class="s2">.</span><span class="s1">getAuthority</span><span class="s2">().</span><span class="s1">equals</span><span class="s2">(</span><span class="s4">&quot;ROLE_CUSTOMER&quot;</span><span class="s2">))) {</span>
+                <span class="s1">redirectUrl </span><span class="s2">= </span><span class="s4">&quot;/customer/dashboard&quot;</span><span class="s2">;</span>
+            <span class="s2">} </span><span class="s0">else if </span><span class="s2">(</span><span class="s1">authorities</span><span class="s2">.</span><span class="s1">stream</span><span class="s2">().</span><span class="s1">anyMatch</span><span class="s2">(</span><span class="s1">a -&gt; a</span><span class="s2">.</span><span class="s1">getAuthority</span><span class="s2">().</span><span class="s1">equals</span><span class="s2">(</span><span class="s4">&quot;ROLE_PARKING_SLOT_MANAGER&quot;</span><span class="s2">))) {</span>
+                <span class="s1">redirectUrl </span><span class="s2">= </span><span class="s4">&quot;/slotmanager/dashboard&quot;</span><span class="s2">;</span>
+            <span class="s2">} </span><span class="s0">else if </span><span class="s2">(</span><span class="s1">authorities</span><span class="s2">.</span><span class="s1">stream</span><span class="s2">().</span><span class="s1">anyMatch</span><span class="s2">(</span><span class="s1">a -&gt; a</span><span class="s2">.</span><span class="s1">getAuthority</span><span class="s2">().</span><span class="s1">equals</span><span class="s2">(</span><span class="s4">&quot;ROLE_FINANCE_EXECUTIVE&quot;</span><span class="s2">))) {</span>
+                <span class="s1">redirectUrl </span><span class="s2">= </span><span class="s4">&quot;/finance/dashboard&quot;</span><span class="s2">;</span>
+            <span class="s2">} </span><span class="s0">else if </span><span class="s2">(</span><span class="s1">authorities</span><span class="s2">.</span><span class="s1">stream</span><span class="s2">().</span><span class="s1">anyMatch</span><span class="s2">(</span><span class="s1">a -&gt; a</span><span class="s2">.</span><span class="s1">getAuthority</span><span class="s2">().</span><span class="s1">equals</span><span class="s2">(</span><span class="s4">&quot;ROLE_SECURITY_OFFICER&quot;</span><span class="s2">))) {</span>
+                <span class="s1">redirectUrl </span><span class="s2">= </span><span class="s4">&quot;/security/dashboard&quot;</span><span class="s2">;</span>
+            <span class="s2">} </span><span class="s0">else if </span><span class="s2">(</span><span class="s1">authorities</span><span class="s2">.</span><span class="s1">stream</span><span class="s2">().</span><span class="s1">anyMatch</span><span class="s2">(</span><span class="s1">a -&gt; a</span><span class="s2">.</span><span class="s1">getAuthority</span><span class="s2">().</span><span class="s1">equals</span><span class="s2">(</span><span class="s4">&quot;ROLE_CUSTOMER_SUPPORT_OFFICER&quot;</span><span class="s2">))) {</span>
+                <span class="s1">redirectUrl </span><span class="s2">= </span><span class="s4">&quot;/support/dashboard&quot;</span><span class="s2">;</span>
+            <span class="s2">}</span>
+
+            <span class="s1">response</span><span class="s2">.</span><span class="s1">sendRedirect</span><span class="s2">(</span><span class="s1">redirectUrl</span><span class="s2">);</span>
+        <span class="s2">};</span>
+    <span class="s2">}</span>
+
+    <span class="s3">// Main security filter chain configuration</span>
+    <span class="s1">@Bean</span>
+    <span class="s0">public </span><span class="s1">SecurityFilterChain securityFilterChain</span><span class="s2">(</span><span class="s1">HttpSecurity http</span><span class="s2">) </span><span class="s0">throws </span><span class="s1">Exception </span><span class="s2">{</span>
+        <span class="s1">http</span>
+                <span class="s2">.</span><span class="s1">userDetailsService</span><span class="s2">(</span><span class="s1">customUserDetailsService</span><span class="s2">) </span><span class="s3">// Configure our custom UserDetailsService</span>
+                <span class="s2">.</span><span class="s1">csrf</span><span class="s2">(</span><span class="s1">csrf -&gt; csrf</span><span class="s2">.</span><span class="s1">disable</span><span class="s2">()) </span><span class="s3">// ❗ disable only for development/testing</span>
+                <span class="s2">.</span><span class="s1">authorizeHttpRequests</span><span class="s2">(</span><span class="s1">auth -&gt; auth</span>
+                        <span class="s3">// Role-based access (prefix &quot;ROLE_&quot; is added automatically by Spring)</span>
+                        <span class="s2">.</span><span class="s1">requestMatchers</span><span class="s2">(</span><span class="s4">&quot;/admin/**&quot;</span><span class="s2">).</span><span class="s1">hasRole</span><span class="s2">(</span><span class="s4">&quot;ADMIN&quot;</span><span class="s2">)</span>
+                        <span class="s2">.</span><span class="s1">requestMatchers</span><span class="s2">(</span><span class="s4">&quot;/customer/**&quot;</span><span class="s2">).</span><span class="s1">hasRole</span><span class="s2">(</span><span class="s4">&quot;CUSTOMER&quot;</span><span class="s2">)</span>
+                        <span class="s2">.</span><span class="s1">requestMatchers</span><span class="s2">(</span><span class="s4">&quot;/security/**&quot;</span><span class="s2">).</span><span class="s1">hasRole</span><span class="s2">(</span><span class="s4">&quot;SECURITY_OFFICER&quot;</span><span class="s2">)</span>
+                        <span class="s2">.</span><span class="s1">requestMatchers</span><span class="s2">(</span><span class="s4">&quot;/finance/**&quot;</span><span class="s2">).</span><span class="s1">hasRole</span><span class="s2">(</span><span class="s4">&quot;FINANCE_EXECUTIVE&quot;</span><span class="s2">)</span>
+                        <span class="s2">.</span><span class="s1">requestMatchers</span><span class="s2">(</span><span class="s4">&quot;/support/**&quot;</span><span class="s2">).</span><span class="s1">hasRole</span><span class="s2">(</span><span class="s4">&quot;CUSTOMER_SUPPORT_OFFICER&quot;</span><span class="s2">)</span>
+                        <span class="s2">.</span><span class="s1">requestMatchers</span><span class="s2">(</span><span class="s4">&quot;/slotmanager/**&quot;</span><span class="s2">).</span><span class="s1">hasRole</span><span class="s2">(</span><span class="s4">&quot;PARKING_SLOT_MANAGER&quot;</span><span class="s2">)</span>
+                        <span class="s2">.</span><span class="s1">requestMatchers</span><span class="s2">(</span><span class="s4">&quot;/login&quot;</span><span class="s2">, </span><span class="s4">&quot;/register&quot;</span><span class="s2">, </span><span class="s4">&quot;/css/**&quot;</span><span class="s2">, </span><span class="s4">&quot;/js/**&quot;</span><span class="s2">).</span><span class="s1">permitAll</span><span class="s2">() </span><span class="s3">// public pages</span>
+                        <span class="s2">.</span><span class="s1">requestMatchers</span><span class="s2">(</span><span class="s4">&quot;/api/register&quot;</span><span class="s2">, </span><span class="s4">&quot;/api/login&quot;</span><span class="s2">).</span><span class="s1">permitAll</span><span class="s2">() </span><span class="s3">// public API endpoints</span>
+                        <span class="s2">.</span><span class="s1">requestMatchers</span><span class="s2">(</span><span class="s4">&quot;/api/**&quot;</span><span class="s2">).</span><span class="s1">authenticated</span><span class="s2">() </span><span class="s3">// protected API endpoints</span>
+                        <span class="s2">.</span><span class="s1">anyRequest</span><span class="s2">().</span><span class="s1">authenticated</span><span class="s2">())</span>
+                <span class="s2">.</span><span class="s1">formLogin</span><span class="s2">(</span><span class="s1">login -&gt; login</span>
+                        <span class="s2">.</span><span class="s1">loginPage</span><span class="s2">(</span><span class="s4">&quot;/login&quot;</span><span class="s2">) </span><span class="s3">// custom login page</span>
+                        <span class="s2">.</span><span class="s1">successHandler</span><span class="s2">(</span><span class="s1">customSuccessHandler</span><span class="s2">()) </span><span class="s3">// redirect by role</span>
+                        <span class="s2">.</span><span class="s1">failureHandler</span><span class="s2">(</span><span class="s1">customAuthenticationFailureHandler</span><span class="s2">) </span><span class="s3">// 👈 use our handler</span>
+                        <span class="s2">.</span><span class="s1">permitAll</span><span class="s2">())</span>
+                <span class="s2">.</span><span class="s1">logout</span><span class="s2">(</span><span class="s1">logout -&gt; logout</span>
+                        <span class="s2">.</span><span class="s1">logoutUrl</span><span class="s2">(</span><span class="s4">&quot;/logout&quot;</span><span class="s2">)</span>
+                        <span class="s2">.</span><span class="s1">logoutSuccessUrl</span><span class="s2">(</span><span class="s4">&quot;/login?logout&quot;</span><span class="s2">)</span>
+                        <span class="s2">.</span><span class="s1">permitAll</span><span class="s2">());</span>
+
+        <span class="s0">return </span><span class="s1">http</span><span class="s2">.</span><span class="s1">build</span><span class="s2">();</span>
+    <span class="s2">}</span>
+<span class="s2">}</span>
+</pre>
+</body>
+</html>
